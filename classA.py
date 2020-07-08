@@ -9,6 +9,12 @@ import json
 import socket
 import zlib
 import time
+import threading
+import os
+import classB
+import classC
+import inspect
+import ctypes
 
 class classA(QMainWindow):
     def __init__(self):
@@ -17,14 +23,21 @@ class classA(QMainWindow):
         self.initUI()
         self.setWindowTitle("测试")
         self.setWindowIcon(QIcon(r"./images/logo1.png"))
-        self.backend = classAback(self)
+        self.backend = -1
+        self.tem1 = -100
+        self.tem2 = -100
 
     def initUI(self):
+        with open("statuscode.json", 'r') as f:
+            self.sb99 = json.load(f)
+        with open("level.json", "r") as f:
+            self.level = json.load(f)
         self.statusBar = QStatusBar()
         self.statusBar.showMessage("2019-2020 SOLFIR-X.Corp")
         self.statusright = QLabel("江苏金羿智芯科技有限公司 版权所有")
         self.statusBar.addPermanentWidget(self.statusright)
         self.setStatusBar(self.statusBar)
+        self.lock = threading.Lock()
 
         self.sb0 = QLabel()
         self.sb0.setText("M02 TEST Platfrorm V1.0.1")
@@ -125,7 +138,7 @@ class classA(QMainWindow):
         self.sb33.setFixedWidth(70)
         self.sb33.setStyleSheet("background:transparent;border-width:0;border-style:outset")
         self.sb34 = QTextEdit()
-        self.sb34.setDisabled(True)
+        # self.sb34.setDisabled(True)
         # self.sb34.setStyleSheet("background:transparent;border-width:0;border-style:outset")
         self.sb34.setFixedHeight(272)
         # self.sb34.setFixedWidth(234)
@@ -235,13 +248,25 @@ class classA(QMainWindow):
         self.sb47.addWidget(self.sb45)
 
         self.sb49 = QPushButton("Setup")
+        self.sb49.clicked.connect(self.setupchecked)
         self.sb50 = QPushButton("Start")
         self.sb50.clicked.connect(self.startchecked)
+        self.sb56 = QPushButton("Pause")
+        self.sb56.setDisabled(True)
+        self.sb56.clicked.connect(self.pausechecked)
+
+        self.sb57 = QPushButton("Restore")
+        self.sb57.setDisabled(True)
+        self.sb57.clicked.connect(self.restorechecked)
+
         self.sb51 = QPushButton("Stop")
+        self.sb51.clicked.connect(self.endchecked)
         self.sb52 = QHBoxLayout()
         self.sb52.addWidget(self.sb49)
-        self.sb52.addSpacing(350)
+        self.sb52.addSpacing(250)
         self.sb52.addWidget(self.sb50)
+        self.sb52.addWidget(self.sb56)
+        self.sb52.addWidget(self.sb57)
         self.sb52.addWidget(self.sb51)
 
         self.sb53 = QVBoxLayout()
@@ -254,53 +279,184 @@ class classA(QMainWindow):
         self.sb54.setLayout(self.sb53)
         self.setCentralWidget(self.sb54)
         self.setFixedSize(660, 440)
+
         # self.setFixedSize(498, 440)
-        print("width = " + str(self.width()))
-        print("height = " + str(self.height()))
+        # print("width = " + str(self.width()))
+        # print("height = " + str(self.height()))
 
     def startchecked(self):
         self.sb50.setDisabled(True)
-        self.backend.update_date.connect(self.showPOWER)
-        self.backend.update_date1.connect(self.showPROGRESSBAR)
+        self.sb55 = ''
+        print("self.sb55:", self.sb55)
+        self.sb34.setPlainText(None)
+        self.right = 0
+        self.wrong = 0
+        self.temp = 0
+        if self.backend == -1:
+            self.backend = classB.classAback(self)
+            self.backend.update_date3.connect(self.writetologbegin)
+            self.backend.update_date2.connect(self.showLOG)
+            self.backend.update_date.connect(self.showPOWER)
+            self.backend.update_date1.connect(self.showPROGRESSBAR)
+            self.backend.update_date4.connect(self.writetolog)
+            self.backend.update_date5.connect(self.writetologend)
         self.backend.start()
+        self.sb56.setDisabled(False)
 
     def endchecked(self):
-        pass
+        if self.backend == -1:
+            return
+        self.backend.changepidset(1)
+        time.sleep(0.5)
+        del self.backend
+        self.backend = -1
+        self.sb50.setDisabled(False)
+        self.sb56.setDisabled(True)
+        self.sb57.setDisabled(True)
 
     def setupchecked(self):
-        pass
+        self.setDisabled(True)
+        self.setupobj = classC.classC(self)
+        self.setupobj.update_temp1.connect(self.settemp1)
+        self.setupobj.update_temp2.connect(self.settemp2)
+        self.setupobj.show()
+
+    def settemp1(self, temp1):
+        self.tem1 = temp1
+        print(self.tem1)
+
+    def settemp2(self, temp2):
+        self.tem2 = temp2
+        print(self.tem2)
+
+    def pausechecked(self):
+        if self.backend == -1:
+            return
+        self.sb56.setDisabled(True)
+        self.sb57.setDisabled(False)
+        self.backend.pausestart()
+
+
+    def restorechecked(self):
+        self.sb56.setDisabled(False)
+        self.sb57.setDisabled(True)
+        self.backend.restorestart()
+
+
+
 
     def showPROGRESSBAR(self, l1):
-        print("显示进度条")
+        # print("显示进度条")
         self.sb46 = 100 * int(l1[-14:-12], 16) / int(l1[20:22], 16)
-        print(self.sb46)
+        # print(self.sb46)
         self.sb45.setValue(self.sb46)
+        # if l1[-14:-12] == l1[20:22]:
+        #     self.lock.acquire()
+        #     with open(self.id, 'a') as f1:
+        #         self.writetolog(f1, right=self.right, wrong=self.wrong)
+        #     self.lock.release()
 
 
     def showPOWER(self, l1):
-        print(l1)
+        # print(l1)
         self.POWERstr = [l1[16:-12][i:i + 4] for i in range(0, len(l1[16:-12]), 4)]
-        print(self.POWERstr)
-        print(str(int(self.POWERstr[0], 16) / 1000) + 'V')
-        print(type(str(int(self.POWERstr[0], 16) / 1000) + 'V'))
-        self.sb15.setText('{:.3f}'.format(int(self.POWERstr[0], 16) / 1000) + 'V')
-        self.sb16.setText('{:.3f}'.format(int(self.POWERstr[1], 16) / 1000) + 'A')
-        self.sb17.setText('{:.3f}'.format(int(self.POWERstr[2], 16) / 1000) + 'V')
-        self.sb18.setText('{:.3f}'.format(int(self.POWERstr[3], 16) / 1000) + 'A')
-        self.sb19.setText('{:.3f}'.format(int(self.POWERstr[4], 16) / 1000) + 'V')
-        self.sb20.setText('{:.3f}'.format(int(self.POWERstr[5], 16) / 1000) + 'A')
-        self.sb21.setText('{:.3f}'.format(int(self.POWERstr[6], 16) / 1000) + 'V')
-        self.sb22.setText('{:.3f}'.format(int(self.POWERstr[7], 16) / 1000) + 'A')
-        self.sb23.setText('{:.3f}'.format(int(self.POWERstr[14], 16) / 1000) + 'V')
-        self.sb24.setText('{:.3f}'.format(int(self.POWERstr[15], 16) / 1000) + 'A')
-        self.sb25.setText('{:.3f}'.format(int(self.POWERstr[8], 16) / 1000) + 'V')
-        self.sb26.setText('{:.3f}'.format(int(self.POWERstr[9], 16) / 1000) + 'A')
-        self.sb27.setText('{:.3f}'.format(int(self.POWERstr[10], 16) / 1000) + 'V')
-        self.sb28.setText('{:.3f}'.format(int(self.POWERstr[11], 16) / 1000) + 'A')
-        self.sb29.setText('{:.3f}'.format(int(self.POWERstr[12], 16) / 1000) + 'V')
-        self.sb30.setText('{:.3f}'.format(int(self.POWERstr[13], 16) / 1000) + 'A')
-        self.sb31.setText('{:.3f}'.format(int(self.POWERstr[14], 16) / 1000) + 'V')
-        self.sb32.setText('{:.3f}'.format(int(self.POWERstr[15], 16) / 1000) + 'A')
+        # with open(self.id, 'a') as f1:
+        #     self.writetolog(f1, *[int(self.POWERstr, 16) / 1000])
+        # print(self.POWERstr)
+        # print(str(int(self.POWERstr[0], 16) / 1000) + 'V')
+        # print(type(str(int(self.POWERstr[0], 16) / 1000) + 'V'))
+        # self.sb15.setStyleSheet("color:red")
+
+
+        keylis = [f"sb{i}" for i in range(15, 33)]
+        vallis = [int(i, 16)/1000 for i in self.POWERstr]
+        vallis.insert(8, int(self.POWERstr[14], 16) / 1000)
+        vallis.insert(9, int(self.POWERstr[15], 16) / 1000)
+        prolis = [self.sb15, self.sb16, self.sb17, self.sb18, self.sb19, self.sb20, self.sb21, self.sb22, self.sb23, self.sb24, self.sb25, self.sb26, self.sb27, self.sb28, self.sb29, self.sb30, self.sb31, self.sb32]
+        prodic = {keylis[i]:prolis[i] for i in range(len(keylis))}
+        showdic = {keylis[i]:vallis[i] for i in range(len(keylis))}
+        '''
+        for k, v in showdic.items():
+            if v > 0.2:
+                prodic[k].setStyleSheet("color:red")
+            else:
+                prodic[k].setStyleSheet("color:black")
+        '''
+        print("这里咋样")
+        '''
+        self.leveldic = {'sb15':self.level['VDD12V'][0:2],
+                    'sb16':self.level['VDD12V'][2:],
+                    'sb17':self.level['VDDINT_A'][0:2],
+                    'sb18':self.level['VDDINT_A'][2:],
+                    'sb19':self.level['VDDDRM_A'][0:2],
+                    'sb20':self.level['VDDDRM_A'][2:],
+                    'sb21':self.level['VDDDIO_A'][0:2],
+                    'sb22':self.level['VDDDIO_A'][2:],
+                    'sb23':self.level['VDDD3V3_A'][0:2],
+                    'sb24':self.level['VDDD3V3_A'][2:],
+                    'sb25':self.level['VDDINT_B'][0:2],
+                    'sb26':self.level['VDDINT_B'][2:],
+                    'sb27':self.level['VDDDRM_B'][0:2],
+                    'sb28':self.level['VDDDRM_B'][2:],
+                    'sb29':self.level['VDDDIO_B'][0:2],
+                    'sb30':self.level['VDDDIO_B'][0:2],
+                    'sb31':self.level['VDDD3V3_B'][0:2],
+                    'sb32':self.level['VDDD3V3_B'][2:],
+        }
+        '''
+        self.leveldic = {'sb15': conf.VDD12V[0:2],
+                         'sb16': conf.VDD12V[2:],
+                         'sb17': conf.VDDINT_A[0:2],
+                         'sb18': conf.VDDINT_A[2:],
+                         'sb19': conf.VDDDRM_A[0:2],
+                         'sb20': conf.VDDDRM_A[2:],
+                         'sb21': conf.VDDDIO_A[0:2],
+                         'sb22': conf.VDDDIO_A[2:],
+                         'sb23': conf.VDDD3V3_A[0:2],
+                         'sb24': conf.VDDD3V3_A[2:],
+                         'sb25': conf.VDDINT_B[0:2],
+                         'sb26': conf.VDDINT_B[2:],
+                         'sb27': conf.VDDDRM_B[0:2],
+                         'sb28': conf.VDDDRM_B[2:],
+                         'sb29': conf.VDDDIO_B[0:2],
+                         'sb30': conf.VDDDIO_B[0:2],
+                         'sb31': conf.VDDD3V3_B[0:2],
+                         'sb32': conf.VDDD3V3_B[2:],
+                         }
+        print(self.leveldic)
+        for k, v in showdic.items():
+            print(k)
+            print(v)
+            print(self.leveldic[k])
+
+            if float(self.leveldic[k][0]) < v and v < float(self.leveldic[k][1]):
+                prodic[k].setStyleSheet("color:black")
+            else:
+                prodic[k].setStyleSheet("color:red")
+
+
+
+
+
+
+        self.sb15.setText("{:.3f}V".format(int(self.POWERstr[0], 16) / 1000))
+        self.sb16.setText('{:.3f}A'.format(int(self.POWERstr[1], 16) / 1000))
+        self.sb17.setText('{:.3f}V'.format(int(self.POWERstr[2], 16) / 1000))
+        self.sb18.setText('{:.3f}A'.format(int(self.POWERstr[3], 16) / 1000))
+        self.sb19.setText('{:.3f}V'.format(int(self.POWERstr[4], 16) / 1000))
+        self.sb20.setText('{:.3f}A'.format(int(self.POWERstr[5], 16) / 1000))
+        self.sb21.setText('{:.3f}V'.format(int(self.POWERstr[6], 16) / 1000))
+        self.sb22.setText('{:.3f}A'.format(int(self.POWERstr[7], 16) / 1000))
+        self.sb23.setText('{:.3f}V'.format(int(self.POWERstr[14], 16) / 1000))
+        self.sb24.setText('{:.3f}A'.format(int(self.POWERstr[15], 16) / 1000))
+        self.sb25.setText('{:.3f}V'.format(int(self.POWERstr[8], 16) / 1000))
+        self.sb26.setText('{:.3f}A'.format(int(self.POWERstr[9], 16) / 1000))
+        self.sb27.setText('{:.3f}V'.format(int(self.POWERstr[10], 16) / 1000))
+        self.sb28.setText('{:.3f}A'.format(int(self.POWERstr[11], 16) / 1000))
+        self.sb29.setText('{:.3f}V'.format(int(self.POWERstr[12], 16) / 1000))
+        self.sb30.setText('{:.3f}A'.format(int(self.POWERstr[13], 16) / 1000))
+        self.sb31.setText('{:.3f}V'.format(int(self.POWERstr[14], 16) / 1000))
+        self.sb32.setText('{:.3f}A'.format(int(self.POWERstr[15], 16) / 1000))
         # self.sb15.setText(str(int(self.POWERstr[0], 16) / 1000) + 'V')
         # self.sb16.setText(str(int(self.POWERstr[1], 16) / 1000) + 'A')
         # self.sb17.setText(str(int(self.POWERstr[2], 16) / 1000) + 'V')
@@ -319,177 +475,185 @@ class classA(QMainWindow):
         # self.sb30.setText(str(int(self.POWERstr[13], 16) / 1000) + 'A')
         # self.sb31.setText(str(int(self.POWERstr[14], 16) / 1000) + 'V')
         # self.sb32.setText(str(int(self.POWERstr[15], 16) / 1000) + 'A')
-
-
-
-class classAback(QThread):
-    update_date = pyqtSignal(str)
-    update_date1 = pyqtSignal(str)
-
-    def __init__(self, self1):
-        print("classAback")
-        self.self1 = self1
-        super(classAback, self).__init__()
-        with open("order_dict.json", 'r') as f:
-            self.order_dict = json.load(f)
-        print("self.order_dict")
-        print(self.order_dict)
-        self.order_dict0 = {}
-        for k, v in self.order_dict.items():
-            self.order_dict0[k] = binascii.a2b_hex(v)
-        self.order_dict = copy.deepcopy(self.order_dict0)
-        print("打印字典完成")
-        self.connectDSP(conf.IP1_ADDR, conf.IP1_PORT)
-
-    def connectDSP(self, ipaddr, port):
-        print("开始connectDSP")
-        self.sss = 0
-        self.n = 0
-        while self.n < 3:
-            try:
-                self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.sock.connect((ipaddr, port))
-            except TimeoutError as e:
-                self.n += 1
-                continue
-            break
-
-        if self.n == 3:
-            print("测试版连接失败")
+    def showLOG(self, l1):
+        if len(l1) < 34:
             return
+        l1 = l1[22:-12]
+        self.sb101 = [l1[i:i+4][-2:] for i in range(0, len(l1), 4)]
+        self.sb102 = [l1[i:i+4][:2] for i in range(0, len(l1), 4)]
+        self.sb48.setText(self.sb99[str(int(self.sb101[-1], 16))])
+        for i in range(len(self.sb101)):
+            print("进入循环")
+            if self.sb102[i] == '00':
+                self.right += 1
+                print('这里是第一部分循环')
+                print(self.sb99)
+                c = "{:<20}".format(self.sb99[str(int(self.sb101[i], 16))]) + '\tPASS\n'
+                print('正确的c', c)
+                # with open(self.id, 'a') as f1:
+                #     self.writetolog(f1, test_part=self.sb99[str(int(self.sb101[i], 16))], test_part_status='OK')
+            elif self.sb102[i] == '80':
+                self.wrong += 1
+                c = "{:<20}".format(self.sb99[str(int(self.sb101[i], 16))]) + '\tFAIL\n'
+                # with open(self.id, 'a') as f1:
+                #     self.writetolog(f1, test_part=self.sb99[str(int(self.sb101[i], 16))], test_part_status="ERROR")
+                print('错误的c', c)
+            else:
+                print("这里有问题")
+                c = "这里有问题"
+            print("正确的值", self.right)
+            print("错误的值", self.wrong)
+            self.sb55 += c
+        self.sb34.setPlainText(self.sb55)
+        self.sb34.verticalScrollBar().setValue(self.sb34.verticalScrollBar().maximum())
+
+        # if self.right + self.wrong == self.tot:
+        #     with open(self.id, 'a') as f1:
+        #         self.writetolog(f1, right=self.right, wrong=self.wrong)
+
+    # def rememberidandtime(self, id, time, tot):
+    #     self.id = id
+    #     self.tot = tot
+    #     print("我已得到self.tot", self.tot)
+        # with open(self.id, 'w') as f1:
+        #     self.writetolog(f1, wid=self.id, tot=self.tot, tem1=1, tem2=2, dttime=time)
+
+#     def writetologbegin(self, f1, *args, wid=None, tot=None, tem1=None, tem2=None, test_part=None, test_part_status=None,
+#                    dttime=None, right=None, wrong=None):
+#         if wid is not None:
+#             s1 = f'''
+# M02 TEST RECORD
+# ID: {wid}
+# TOTAL TEST: {tot}
+# TEM: TEM_A: {tem1}, TEM_B: {tem2}
+# DATA: {dttime}
+# '''
+#             f1.write(s1)
+#         if test_part is not None:
+#             s2 = f'''
+# {test_part} {test_part_status}
+# '''
+#             f1.write(s2)
+#         if len(args) != 0:
+#             s5 = f'''
+# POWER:
+# VDD12V: {args[0]}, {args[0]}  VDD3V3: {args[0]}, {args[0]}
+# VDDINT_A: {args[0]}, {args[0]}    VDDRAM_A: {args[0]}, {args[0]}    VDDIO_A: {args[0]}, {args[0]}
+# VDDINT_B: {args[0]}, {args[0]}    VDDRAM_B: {args[0]}, {args[0]}    VDDIO_B: {args[0]}, {args[0]}
+# '''
+#         if right is not None:
+#             if wrong == 0:
+#                 s4 = "M02 TEST SUCCESSFUL"
+#             else:
+#                 s4 = "M02 TEST SAIL"
+#             s3 = f'''
+# M02 TEST RESULT
+# OK: {right}
+# ERROR: {wrong}
+# {s4}
+# DATA:{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+# '''
+#             f1.write(s3)
+
+    def writetologbegin(self, id, dttime, recv, recv2):
+        self.id = id
+        self.total = int(recv[18:22], 16)
+        sb100 = [int(recv2[16:-12][i:i+4],16)/1000 for i in range(0, len(recv2[16:-12]), 4)]
+        print('sb100', sb100)
+        s1 = f'''M02 TEST RECORD
+ID: {self.id}
+TOTAL TEST: {self.total}
+TEM: TEM_A: {self.tem1}℃, TEM_B: {self.tem2}℃
+VDD12V: {sb100[0]}V, {sb100[1]}A  
+VDDINT_A: {sb100[2]}V, {sb100[3]}A    VDDRAM_A: {sb100[4]}V, {sb100[5]}A 
+VDDIO_A: {sb100[6]}V, {sb100[7]}A   VDD2V3:{sb100[14]}V, {sb100[15]}A
+VDDINT_B: {sb100[8]}V, {sb100[9]}A    VDDRAM_B: {sb100[10]}V, {sb100[11]}A  
+VDDIO_B: {sb100[12]}V, {sb100[13]}A   VDD2V3:{sb100[14]}V, {sb100[15]}A
+DATA: {dttime}
+
+
+
+------------------start test-------------------
+'''
+        self.sb55 += s1
+        print("self.sb55:", self.sb55)
+        with open(self.id + ".txt", 'w') as f1:
+            f1.write(s1)
+    def writetolog(self, id, recv, recv2):
+        if recv2 == '':
+            if len(recv) < 34:
+                return
+            l1 = recv[22:-12]
+            sb101 = [l1[i:i+4][-2:] for i in range(0, len(l1), 4)]
+            sb102 = [l1[i:i+4][:2] for i in range(0, len(l1), 4)]
+            with open(self.id + ".txt", 'a') as f1:
+                for i in range(len(sb101)):
+                    if sb102[i] == '00':
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\n'
+                        f1.write(c)
+                    elif sb102[i] == '80':
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\n'
+                        f1.write(c)
+                    else:
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\n'
+                        f1.write(c)
         else:
-            print("测试版连接成功")
+            if len(recv) < 34:
+                return
+            self.temp += 1
+            l1 = recv[22:-12]
+            sb101 = [l1[i:i + 4][-2:] for i in range(0, len(l1), 4)]
+            sb102 = [l1[i:i + 4][:2] for i in range(0, len(l1), 4)]
+            sb103 = [int(recv2[16:-12][i:i+4],16)/1000 for i in range(0, len(recv2[16:-12]), 4)]
+            dp = f"VDD12V:{sb103[0]}, {sb103[1]}\tVDD3V3:{sb103[14]}, {sb103[15]}\tVDDINT_A:{sb103[2]}, {sb103[3]}\tVDDRAM_A:{sb103[4]}, {sb103[5]}\tVDDIO_A:{sb103[6]}, {sb103[7]}, VDDINT_B:{sb103[8]}, {sb103[9]}\tVDDRAM_B{sb103[10]}, {sb103[11]}\tVDDIO_B{sb103[12]}, {sb103[13]}"
+            # print('sb103', sb103)
 
-        while True:
-            try:
-                print(self.order_dict['getMAC'])
-                self.sock.send(self.order_dict['getMAC'])
-                # self.sock.send(self.order_dict['getMAC'].encode())
-                self.recv = self.sock.recv(1024)
-                print(self.recv)
-                self.mac = binascii.b2a_hex(self.recv).decode()
-                print(self.mac)
-                print(self.crc(self.mac[4:-12]))
-                print(self.mac[-12:-4])
-                if self.crc(self.mac[4:-12]) == self.mac[-12:-4]:
-                    break
-            # except Exception as e:
-            except socket.error as e:
-                self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.sock.connect((ipaddr, port))
+            with open(self.id + ".txt", 'a') as f1:
+                for i in range(len(sb101)-1):
+                    if sb102[i] == '00':
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\t' + dp + '\n'
+                        f1.write(c)
+                    elif sb102[i] == '80':
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\t' + dp + '\n'
+                        f1.write(c)
+                    else:
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\t' + dp + '\n'
+                        f1.write(c)
 
-        self.idfirst = '000101' + self.mac[18:-12]
-        print("semf.mac")
-        print(self.mac)
-        print(self.idfirst)
+            print("进到记录电压里的次数：", self.temp)
 
-    def crc(self, l1):
-        self.l2 = binascii.a2b_hex(l1)
-        print(self.l2)
-        self.c = zlib.crc32(self.l2)
-        return hex(self.c)[2:] if len(hex(self.c)[2:]) == 8 else '0'*(8-len(hex(self.c)[2:]))+hex(self.c)[2:]
 
-    def ordercreate(self, l1, l2, l3):
-        return 'aa55' + l1 + '{:04x}'.format(int(len(l2) / 2)) + l2 + l3 + '33cc'
+    def writetologend(self):
+        if self.right == self.total:
+            s4 = "M02 TEST PASS"
+        else:
+            s4 = "M02 TEST FAIL"
+        s3 = f'''
 
-    def run(self):
-        print("开始run")
-        self.update_date1.emit('55aa00020007000300006c8000dd699d1a33cc')
-        self.time = time.localtime()
-        self.id = self.idfirst + '{:04x}{:02x}{:02x}{:02x}{:02x}{:02x}'.format(self.time.tm_year, self.time.tm_mon,
-                                                                               self.time.tm_mday, self.time.tm_hour,
-                                                                               self.time.tm_min, self.time.tm_sec)
-        self.sendid = self.ordercreate('0001', self.id,
-                                       self.crc('0001' + '{:04x}'.format(int(len(self.id) / 2)) + self.id))
-        print("self.sendid")
-        print(self.sendid)
-        self.sendid = binascii.a2b_hex(self.sendid)
-        print("self.sendid")
-        print(self.sendid)
-        self.sendord1 = [self.sendid, self.order_dict['getSTATE']]
-        while True:
-            for i in self.sendord1:
-                while True:
-                    try:
-                        print("self.socket.send('self.sendid')")
-                        print(i)
-                        print("这里对不对")
-                        # time.sleep(1)
-                        # self.sock.send(i.encode())
-                        self.sock.send(i)
-                        print('sock getSTATE OK')
 
-                        self.recv = self.sock.recv(1024)
-                        print(self.recv)
-                    except Exception as e:
-                        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        self.sock.connect((conf.IP1_ADDR, conf.IP1_PORT))
-                    self.recv = binascii.b2a_hex(self.recv)
-                    print(self.recv)
-                    self.recv = self.recv.decode()
-                    print(self.recv)
-                    print('hello world1')
-                    print(self.recv[4:-12])
-                    print(self.crc(self.recv[4:-12]))
-                    print(self.recv[-12:-4])
-                    if i is self.sendord1[1] and int(self.recv[8:12], 16) != 5:
-                        self.update_date1.emit(self.recv)
-                    if self.crc(self.recv[4:-12]) == self.recv[-12:-4]:
-                        print(self.recv[12:20])
-                        if self.recv[12:20] != ['00010001', '00010101', '00010201']:
-                            break
+-----------------end--------------------
+M02 TEST RESULT
+TEST_TOTAL:{self.total}
+OK: {self.right}
+ERROR: {self.wrong}
+{s4}
+DATA:{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+'''
+        self.sb55 += s3
+        self.sb34.setPlainText(self.sb55)
+        self.sb34.verticalScrollBar().setValue(self.sb34.verticalScrollBar().maximum())
 
-            print('hello world')
-            while self.recv[12:18] in ['00030001', '00030101', '00030201']:
-                self.sock.send(self.order_dict['getSTATEagain'])
-                self.recv = self.sock.recv(1024)
-                print(self.recv)
-                self.recv = binascii.b2a_hex(self.recv).decode()
-                print(self.recv)
+        with open(self.id + ".txt", 'a') as f1:
+            f1.write(s3)
 
-            print("hello world 2!!!!!")
-            while True:
-                print('我操你大爷！长度到底是多少！')
-                print(len(self.recv))
-                if int(self.recv[20:22], 16) == int(self.recv[-14:-12], 16) and len(self.recv) > 34:
-                    print("测试完成")
-                    self.self1.sb50.setDisabled(False)
-                    return
-                # time.sleep(1)
-                self.sock.send(self.order_dict['getSTATE'])
-                self.recv = self.sock.recv(1024)
-                self.recv = binascii.b2a_hex(self.recv).decode()
-                print("开始读取状态")
-                print(self.recv)
-                if int(self.recv[8:12], 16) != 5:
-                    self.update_date1.emit(self.recv)
-                print("查看校验：")
-                print('self.sss', self.sss)
-                print('死活都不对')
-                print(self.crc(self.recv[4:-12]))
-                print(self.recv[-12:-4])
-                while self.crc(self.recv[4:-12]) != self.recv[-12:-4] or self.recv[12:18] in ['00030001', '00030101',
-                                                                                              '00030201']:
-                    print("发送getSTATEagain")
-                    self.sock.send(self.order_dict['getSTATEagain'])
-                    self.recv = self.sock.recv(1024)
-                    self.recv = binascii.b2a_hex(self.recv).decode()
-                    print('你大爷的！', self.recv)
 
-                    # 处理电压电流
-                if self.sss == 2:
-                    self.sock.send(self.order_dict['getPOWER'])
-                    self.recvPOWER = binascii.b2a_hex(self.sock.recv(1024))
-                    print("电压：")
-                    print(self.recvPOWER)
-                    # 处理电压电流
-                    # self.showPOWER(self.recv.decode())
-                    self.update_date.emit(self.recvPOWER.decode())
-                    print('电压显示完成')
-                    self.sss = 0
-                self.sss += 1
-            break
-        return 0
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -497,3 +661,4 @@ if __name__ == "__main__":
     main = classA()
     main.show()
     sys.exit(app.exec_())
+
