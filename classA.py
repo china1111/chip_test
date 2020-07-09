@@ -609,13 +609,13 @@ DATA: {dttime}
             with open(self.id + ".txt", 'a') as f1:
                 for i in range(len(sb101)):
                     if sb102[i] == '00':
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\n'
+                        c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\n'
                         f1.write(c)
                     elif sb102[i] == '80':
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\n'
+                        c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\n'
                         f1.write(c)
                     else:
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\n'
+                        c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\n'
                         f1.write(c)
         else:
             if len(recv) < 34:
@@ -632,13 +632,13 @@ DATA: {dttime}
             with open(self.id + ".txt", 'a') as f1:
                 for i in range(len(sb101)-1):
                     if sb102[i] == '00':
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\t' + '\n'
+                        c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\t' + '\n'
                         f1.write(c)
                     elif sb102[i] == '80':
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\t' + '\n'
+                        c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\t' + '\n'
                         f1.write(c)
                     else:
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\t' + '\n'
+                        c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\t' + '\n'
                         f1.write(c)
 
             print("进到记录电压里的次数：", self.temp)
