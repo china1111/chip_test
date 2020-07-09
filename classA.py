@@ -30,8 +30,8 @@ class classA(QMainWindow):
     def initUI(self):
         with open("statuscode.json", 'r') as f:
             self.sb99 = json.load(f)
-        with open("level.json", "r") as f:
-            self.level = json.load(f)
+        # with open("level.json", "r") as f:
+        #     self.level = json.load(f)
         self.statusBar = QStatusBar()
         self.statusBar.showMessage("2019-2020 SOLFIR-X.Corp")
         self.statusright = QLabel("江苏金羿智芯科技有限公司 版权所有")
@@ -224,8 +224,23 @@ class classA(QMainWindow):
 
 
         self.sb43 = QVBoxLayout()
-        self.sb43.addWidget(self.sb33)
-        self.sb43.addWidget(self.sb34)
+        self.sb58 = QLabel("Result")
+        self.sb59 = QLineEdit()
+        self.sb59.setDisabled(True)
+        self.sb59.setFixedHeight(12)
+        self.sb59.setFixedWidth(30)
+        self.sb59.setStyleSheet("background:gray")
+        self.sb60 = QHBoxLayout()
+        self.sb60.addWidget(self.sb33)
+        self.sb60.addSpacing(300)
+        self.sb60.addWidget(self.sb58)
+        self.sb60.addWidget(self.sb59)
+        self.sb61 = QHBoxLayout()
+        self.sb61.addWidget(self.sb34)
+        self.sb43.addLayout(self.sb60)
+        self.sb43.addLayout(self.sb61)
+        # self.sb43.addWidget(self.sb33)
+        # self.sb43.addWidget(self.sb34)
 
         self.sb44 = QHBoxLayout()
         self.sb44.addLayout(self.sb42)
@@ -280,12 +295,16 @@ class classA(QMainWindow):
         self.setCentralWidget(self.sb54)
         self.setFixedSize(660, 440)
 
+        # 电压记录格式[VDD12V, VDD3V3, VDDINT_A, VDDRAM_A, VDDIO_A, VDDINT_B, VDDRAM_B, VDDIO_B]
+        self.sbPOWER = []
+
         # self.setFixedSize(498, 440)
         # print("width = " + str(self.width()))
         # print("height = " + str(self.height()))
 
     def startchecked(self):
         self.sb50.setDisabled(True)
+        self.sb59.setStyleSheet("background:gray")
         self.sb55 = ''
         print("self.sb55:", self.sb55)
         self.sb34.setPlainText(None)
@@ -304,6 +323,7 @@ class classA(QMainWindow):
         self.sb56.setDisabled(False)
 
     def endchecked(self):
+        self.sb59.setStyleSheet("background:gray")
         if self.backend == -1:
             return
         self.backend.changepidset(1)
@@ -488,13 +508,13 @@ class classA(QMainWindow):
                 self.right += 1
                 print('这里是第一部分循环')
                 print(self.sb99)
-                c = "{:<20}".format(self.sb99[str(int(self.sb101[i], 16))]) + '\tPASS\n'
+                c = f"{int(self.sb101[i], 16):<8}" + "{:<20}".format(self.sb99[str(int(self.sb101[i], 16))]) + '\tPASS\n'
                 print('正确的c', c)
                 # with open(self.id, 'a') as f1:
                 #     self.writetolog(f1, test_part=self.sb99[str(int(self.sb101[i], 16))], test_part_status='OK')
             elif self.sb102[i] == '80':
                 self.wrong += 1
-                c = "{:<20}".format(self.sb99[str(int(self.sb101[i], 16))]) + '\tFAIL\n'
+                c = f"{int(self.sb101[i], 16):<8}" + "{:<20}".format(self.sb99[str(int(self.sb101[i], 16))]) + '\tFAIL\n'
                 # with open(self.id, 'a') as f1:
                 #     self.writetolog(f1, test_part=self.sb99[str(int(self.sb101[i], 16))], test_part_status="ERROR")
                 print('错误的c', c)
@@ -605,29 +625,55 @@ DATA: {dttime}
             sb101 = [l1[i:i + 4][-2:] for i in range(0, len(l1), 4)]
             sb102 = [l1[i:i + 4][:2] for i in range(0, len(l1), 4)]
             sb103 = [int(recv2[16:-12][i:i+4],16)/1000 for i in range(0, len(recv2[16:-12]), 4)]
-            dp = f"VDD12V:{sb103[0]}, {sb103[1]}\tVDD3V3:{sb103[14]}, {sb103[15]}\tVDDINT_A:{sb103[2]}, {sb103[3]}\tVDDRAM_A:{sb103[4]}, {sb103[5]}\tVDDIO_A:{sb103[6]}, {sb103[7]}, VDDINT_B:{sb103[8]}, {sb103[9]}\tVDDRAM_B{sb103[10]}, {sb103[11]}\tVDDIO_B{sb103[12]}, {sb103[13]}"
+            # dp = f"VDD12V:{sb103[0]}, {sb103[1]}\tVDD3V3:{sb103[14]}, {sb103[15]}\tVDDINT_A:{sb103[2]}, {sb103[3]}\tVDDRAM_A:{sb103[4]}, {sb103[5]}\tVDDIO_A:{sb103[6]}, {sb103[7]}, VDDINT_B:{sb103[8]}, {sb103[9]}\tVDDRAM_B{sb103[10]}, {sb103[11]}\tVDDIO_B{sb103[12]}, {sb103[13]}"
+            self.sbPOWER.append(sb103)
             # print('sb103', sb103)
 
             with open(self.id + ".txt", 'a') as f1:
                 for i in range(len(sb101)-1):
                     if sb102[i] == '00':
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\t' + dp + '\n'
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\t' + '\n'
                         f1.write(c)
                     elif sb102[i] == '80':
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\t' + dp + '\n'
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tFAIL\t' + '\n'
                         f1.write(c)
                     else:
-                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\t' + dp + '\n'
+                        c = "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tbad return\t' + '\n'
                         f1.write(c)
 
             print("进到记录电压里的次数：", self.temp)
 
 
     def writetologend(self):
+        t1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         if self.right == self.total:
-            s4 = "M02 TEST PASS"
+            self.sb59.setStyleSheet("background:green")
+            # s4 = "M02 TEST PASS"
+            s4 = '''**********           **          ************     ************      
+***********         ****         ************     ************  
+**       **       **    **       **               **
+**       **     **        **     **               **
+***********     **        **     ************     ************  
+**********      ************     ************     ************  
+**              ************               **               **
+**              **        **               **               **
+**              **        **               **               **
+**              **        **     ************     ************   
+**              **        **     ************     ************  '''
         else:
-            s4 = "M02 TEST FAIL"
+            self.sb59.setStyleSheet("background:red")
+            # s4 = "M02 TEST FAIL"
+            s4 = '''**********          **             **        **     
+**********         ****            **        ** 
+**               **    **          **        **
+**             **        **        **        **
+**********     **        **        **        **
+**********     ************        **        **
+**             ************        **        **
+**             **        **        **        **
+**             **        **        **        **
+**             **        **        **        ***********
+**             **        **        **        ***********'''
         s3 = f'''
 
 
@@ -637,14 +683,68 @@ TEST_TOTAL:{self.total}
 OK: {self.right}
 ERROR: {self.wrong}
 {s4}
-DATA:{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+DATA:{t1}
+'''
+        s5 = f'''
+
+
+-----------------end--------------------
+M02 TEST RESULT
+TEST_TOTAL:{self.total}
+OK: {self.right}
+ERROR: {self.wrong}
+DATA:{t1}
 '''
         self.sb55 += s3
         self.sb34.setPlainText(self.sb55)
         self.sb34.verticalScrollBar().setValue(self.sb34.verticalScrollBar().maximum())
 
         with open(self.id + ".txt", 'a') as f1:
-            f1.write(s3)
+            f1.write(s5)
+
+        self.write_to_log_power()
+        self.write_to_end(s4, t1)
+
+    def write_to_log_power(self):
+        l = [sum([self.sbPOWER[i][j] for i in range(len(self.sbPOWER))]) / len(self.sbPOWER) for j in range(len(self.sbPOWER[0]))]
+        c = f'''-----------------Power(average)-------------------------
+VDD12V: {l[0]:.3f}V, {l[1]:.3f}A  
+VDDINT_A: {l[2]:.3f}V, {l[3]:.3f}A    VDDRAM_A: {l[4]:.3f}V, {l[5]:.3f}A 
+VDDIO_A: {l[6]:.3f}V, {l[7]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
+VDDINT_B: {l[8]:.3f}V, {l[9]:.3f}A    VDDRAM_B: {l[10]:.3f}V, {l[11]:.3f}A  
+VDDIO_B: {l[12]:.3f}V, {l[13]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
+'''
+        with open(self.id + ".txt", 'a') as f1:
+            f1.write(c)
+
+        with open(self.id + ".txt", 'a') as f1:
+            f1.write("---------------------------Power(abnormal)----------------------------\n")
+            for i in self.sbPOWER:
+                if i[0] < conf.VDD12V[0] or i[0] > conf.VDD12V[1] or i[1] < conf.VDD12V[2] or i[1] > conf.VDD12V[3]:
+                    f1.write(f"VDD12V: {i[0]}V, {i[1]}A\t")
+                if i[14] < conf.VDDD3V3_A[0] or i[14] > conf.VDDD3V3_A[1] or i[15] < conf.VDDD3V3_A[2] or i[15] > conf.VDDD3V3_A[3]:
+                    f1.write(f"VDD3V3: {i[14]}V, {i[15]}A\t")
+                if i[2] < conf.VDDINT_A[0] or i[2] > conf.VDDINT_A[1] or i[3] < conf.VDDINT_A[2] or i[3] > conf.VDDINT_A[3]:
+                    f1.write(f"VDDINT_A: {i[2]}V, {i[3]}A\t")
+                if i[4] < conf.VDDDRM_A[0] or i[4] > conf.VDDDRM_A[1] or i[5] < conf.VDDDRM_A[2] or i[5] > conf.VDDDRM_A[3]:
+                    f1.write(f"VDDDRM_A: {i[4]}V, {i[5]}A\t")
+                if i[6] < conf.VDDDIO_A[0] or i[6] > conf.VDDDIO_A[1] or i[7] < conf.VDDDIO_A[2] or i[7] > conf.VDDDIO_A[3]:
+                    f1.write(f"VDDDIO_A: {i[6]}V, {i[7]}A\t")
+                if i[8] < conf.VDDINT_B[0] or i[8] > conf.VDDINT_B[1] or i[9] < conf.VDDINT_B[2] or i[9] > conf.VDDINT_B[3]:
+                    f1.write(f"VDDINT_B: {i[8]}V, {i[9]}A\t")
+                if i[10] < conf.VDDDRM_B[0] or i[10] > conf.VDDDRM_B[1] or i[11] < conf.VDDDRM_B[2] or i[11] > conf.VDDDRM_B[3]:
+                    f1.write(f"VDDINT_B: {i[8]}V, {i[9]}A\t")
+                if i[12] < conf.VDDDIO_B[0] or i[12] > conf.VDDDIO_B[1] or i[13] < conf.VDDDIO_B[2] or i[13] > conf.VDDDIO_B[3]:
+                    f1.write(f"VDDINT_B: {i[8]}V, {i[9]}A\n")
+
+
+    def write_to_end(self, t, t1):
+        with open(self.id + ".txt", "a") as f1:
+            f1.write("----------------------data------------------------\n")
+            f1.write(f"DATA:{t1}\n")
+            f1.write("---------------------result------------------------\n")
+            f1.write(t)
+
 
 
 
