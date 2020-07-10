@@ -47,6 +47,7 @@ class classA(QMainWindow):
         self.sb1.setAlignment(Qt.AlignRight)
         self.sb1.setPixmap(QPixmap(r"./images/logo1.png"))
         self.sb2 = QLabel("POWER")
+        self.sb2.setFixedHeight(20)
         self.sb3 = QLabel("Voltage")
         self.sb4 = QLabel("Current")
         self.sb5 = QTableWidgetItem("M02_A")
@@ -134,8 +135,9 @@ class classA(QMainWindow):
         self.sb32.setFixedWidth(70)
         self.sb32.setStyleSheet("background:transparent;border-width:0;border-style:outset")
         self.sb33 = QLabel("LOG")
-        self.sb33.setDisabled(True)
+        # self.sb33.setDisabled(True)
         self.sb33.setFixedWidth(70)
+        self.sb33.setFixedHeight(32)
         self.sb33.setStyleSheet("background:transparent;border-width:0;border-style:outset")
         self.sb34 = QTextEdit()
         # self.sb34.setDisabled(True)
@@ -144,9 +146,9 @@ class classA(QMainWindow):
         # self.sb34.setFixedWidth(234)
 
         self.sb35 = QHBoxLayout()
-        self.sb35.addSpacing(5)
+        self.sb35.addSpacing(15)
         self.sb35.addWidget(self.sb2)
-        self.sb35.addSpacing(36)
+        self.sb35.addSpacing(55)
         self.sb35.addWidget(self.sb3)
         self.sb35.addSpacing(7)
         self.sb35.addWidget(self.sb4)
@@ -227,12 +229,20 @@ class classA(QMainWindow):
         self.sb58 = QLabel("Result")
         self.sb59 = QLineEdit()
         self.sb59.setDisabled(True)
-        self.sb59.setFixedHeight(12)
-        self.sb59.setFixedWidth(30)
+        self.sb59.setFixedHeight(20)
+        self.sb59.setFixedWidth(40)
         self.sb59.setStyleSheet("background:gray")
+        self.sb62 = QLabel("Status")
+        self.sb63 = QLineEdit()
+        self.sb63.setDisabled(True)
+        self.sb63.setFixedSize(40, 20)
+        self.sb63.setStyleSheet("background:red")
         self.sb60 = QHBoxLayout()
+        self.sb60.addSpacing(5)
         self.sb60.addWidget(self.sb33)
-        self.sb60.addSpacing(300)
+        self.sb60.addSpacing(130)
+        self.sb60.addWidget(self.sb62)
+        self.sb60.addWidget(self.sb63)
         self.sb60.addWidget(self.sb58)
         self.sb60.addWidget(self.sb59)
         self.sb61 = QHBoxLayout()
@@ -254,9 +264,9 @@ class classA(QMainWindow):
         self.sb45.setValue(self.sb46)
 
         self.sb47 = QVBoxLayout()
-        self.sb48 = QLineEdit("Hello world")
+        self.sb48 = QLineEdit()
         self.sb48.setFixedHeight(20)
-        self.sb48.setDisabled(True)
+        # self.sb48.setDisabled(True)
         self.sb48.setFixedWidth(100)
         self.sb48.setStyleSheet("background:transparent;border-width:0;border-style:outset")
         self.sb47.addWidget(self.sb48)
@@ -293,7 +303,7 @@ class classA(QMainWindow):
         self.sb54 = QWidget()
         self.sb54.setLayout(self.sb53)
         self.setCentralWidget(self.sb54)
-        self.setFixedSize(660, 440)
+        self.setFixedSize(660, 460)
 
         # 电压记录格式[VDD12V, VDD3V3, VDDINT_A, VDDRAM_A, VDDIO_A, VDDINT_B, VDDRAM_B, VDDIO_B]
         self.sbPOWER = []
@@ -305,6 +315,7 @@ class classA(QMainWindow):
     def startchecked(self):
         self.sb50.setDisabled(True)
         self.sb59.setStyleSheet("background:gray")
+        self.sb63.setStyleSheet("background:green")
         self.sb55 = ''
         print("self.sb55:", self.sb55)
         self.sb34.setPlainText(None)
@@ -324,6 +335,7 @@ class classA(QMainWindow):
 
     def endchecked(self):
         self.sb59.setStyleSheet("background:gray")
+        self.sb63.setStyleSheet("background:red")
         if self.backend == -1:
             return
         self.backend.changepidset(1)
@@ -352,12 +364,14 @@ class classA(QMainWindow):
     def pausechecked(self):
         if self.backend == -1:
             return
+        self.sb63.setStyleSheet("background:yellow")
         self.sb56.setDisabled(True)
         self.sb57.setDisabled(False)
         self.backend.pausestart()
 
 
     def restorechecked(self):
+        self.sb63.setStyleSheet("background:green")
         self.sb56.setDisabled(False)
         self.sb57.setDisabled(True)
         self.backend.restorestart()
@@ -646,6 +660,7 @@ DATA: {dttime}
 
     def writetologend(self):
         t1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        self.sb63.setStyleSheet("background:red")
         if self.right == self.total:
             self.sb59.setStyleSheet("background:green")
             # s4 = "M02 TEST PASS"
