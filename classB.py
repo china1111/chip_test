@@ -34,6 +34,7 @@ class classAback(QThread):
         self.order_dict = copy.deepcopy(self.order_dict0)
         # print("打印字典完成")
         self.connectDSP(conf.IP1_ADDR, conf.IP1_PORT)
+        print("socket连接完成")
         self.pidset = 0
         self.lock = threading.Lock()
         self.__flag_pause = threading.Event()
@@ -134,10 +135,12 @@ class classAback(QThread):
                         self.recvPOWER = binascii.b2a_hex(self.sock.recv(1024)).decode()
                         self.update_date3.emit(self.id, time.strftime("%Y-%m-%d %H:%M:%S", self.time), self.recv, self.recvPOWER)
                         self.update_date.emit(self.recvPOWER)
+                        self.update_date4.emit(self.id, '', self.recvPOWER)
 
                     if i is self.sendord1[1] and int(self.recv[8:12], 16) != 5:
                         self.update_date1.emit(self.recv)
                         self.update_date2.emit(self.recv)
+                        self.update_date4.emit(self.id, self.recv, '')
                     if self.crc(self.recv[4:-12]) == self.recv[-12:-4]:
                         # print(self.recv[12:20])
                         if self.recv[12:20] != ['00010001', '00010101', '00010201']:
@@ -160,12 +163,18 @@ class classAback(QThread):
             while True:
                 # print('我操你大爷！长度到底是多少！')
                 # print(len(self.recv))
+                print("这里我看看对不对")
+                print("self接受到的信息" + self.recv)
                 if int(self.recv[20:22], 16) == int(self.recv[-14:-12], 16) and len(self.recv) > 34:
-                    # print("测试完成")
+                    print("测试完成")
                     self.self1.sb50.setDisabled(False)
+                    print("第一个按键")
                     self.self1.sb56.setDisabled(True)
+                    print("第二个按键")
                     self.self1.sb57.setDisabled(True)
+                    print("第三个按键")
                     self.update_date5.emit()
+                    print("byebye")
                     return
                 # time.sleep(1)
                 self.sock.send(self.order_dict['getSTATE'])
@@ -212,13 +221,31 @@ class classAback(QThread):
                     self.sock.send(self.order_dict['stop'])
                     self.recv = self.sock.recv(1024)
                     self.recv = binascii.b2a_hex(self.recv).decode()
-                    while self.crc(self.mac[4:-12]) != self.mac[-12:-4]:
+                    while self.crc(self.recv[4:-12]) != self.recv[-12:-4]:
                         self.sock.send(self.order_dict['stop'])
                         self.recv = self.sock.recv(1024)
                         self.recv = binascii.b2a_hex(self.recv).decode()
                     return
-                while self.__flag_pause.isSet():
-                    time.sleep(0.1)
+                print("是不是这里的事儿")
+                if self.__flag_pause.isSet():
+                    # 发送暂停命令, 直至生效
+                    while True:
+                        self.sock.send(self.order_dict['pause'])
+                        self.recv = self.sock.recv(1024)
+                        self.recv = binascii.b2a_hex(self.recv).decode()
+                        if self.crc(self.recv[4:-12]) == self.recv[-14:-4]:
+                            break
+                        time.sleep(0.1)
+                    while self.__flag_pause.isSet():
+                        time.sleep(0.1)
+                    # 发送恢复命令, 直至生效
+                    while True:
+                        self.sock.send(self.order_dict['restore'])
+                        self.recv = self.sock.recv(1024)
+                        self.recv = binascii.b2a_hex(self.recv).decode()
+                        if self.crc(self.recv[4:-12]) == self.recv[-14:-4]:
+                            break
+                        time.sleep(0.1)
                 time.sleep(conf.ReadResultCycle)
             break
         return 0

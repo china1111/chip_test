@@ -33,18 +33,26 @@ d = ordercreate('0002', '000301', d)
 # print(e)
 f = crc('00010003000100')
 f = ordercreate('0001', '000100', f)
+g = crc('00010003000102')
+g = ordercreate('0001', '000102', g)
+h = crc('00010003000103')
+h = ordercreate('0001', '000103', h)
 order_dict = {}
 order_dict['getMAC'] = a
 order_dict['getPOWER'] = b
 order_dict['getSTATE'] = c
 order_dict['getSTATEagain'] = d
 order_dict['stop'] = f
+order_dict['pause'] = g
+order_dict['restore'] = h
 
 print(a)
 print(b)
 print(c)
 print(d)
 print(f)
+print(g)
+print(h)
 
 # with open("order_dict.json", 'w') as f:
 #     json.dump(order_dict, f)

@@ -330,7 +330,9 @@ class classA(QMainWindow):
             self.backend.update_date1.connect(self.showPROGRESSBAR)
             self.backend.update_date4.connect(self.writetolog)
             self.backend.update_date5.connect(self.writetologend)
+            self.backend.restorestart()
         self.backend.start()
+        print("backend创建成功")
         self.sb56.setDisabled(False)
 
     def endchecked(self):
@@ -457,7 +459,7 @@ class classA(QMainWindow):
                          'sb31': conf.VDDD3V3_B[0:2],
                          'sb32': conf.VDDD3V3_B[2:],
                          }
-        print(self.leveldic)
+        # print(self.leveldic)
         for k, v in showdic.items():
             print(k)
             print(v)
@@ -614,6 +616,9 @@ DATA: {dttime}
         with open(self.id + ".txt", 'w') as f1:
             f1.write(s1)
     def writetolog(self, id, recv, recv2):
+        if recv == '':
+            sb103 = [int(recv2[16:-12][i:i + 4], 16) / 1000 for i in range(0, len(recv2[16:-12]), 4)]
+            self.sbPOWER.append(sb103)
         if recv2 == '':
             if len(recv) < 34:
                 return

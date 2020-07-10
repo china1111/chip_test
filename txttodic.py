@@ -9,5 +9,5 @@ with open("123.txt", 'r') as f1:
         dic[i[1]] = i[0]
 
 print(dic)
-# with open('statuscode.json', 'w') as f1:
-#     json.dump(dic, f1)
+with open('statuscode.json', 'w') as f1:
+    json.dump(dic, f1)
