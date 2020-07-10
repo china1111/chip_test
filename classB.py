@@ -233,7 +233,9 @@ class classAback(QThread):
                         self.sock.send(self.order_dict['pause'])
                         self.recv = self.sock.recv(1024)
                         self.recv = binascii.b2a_hex(self.recv).decode()
-                        if self.crc(self.recv[4:-12]) == self.recv[-14:-4]:
+                        print("挂起")
+                        print(self.recv)
+                        if self.crc(self.recv[4:-12]) == self.recv[-12:-4]:
                             break
                         time.sleep(0.1)
                     while self.__flag_pause.isSet():
@@ -243,7 +245,9 @@ class classAback(QThread):
                         self.sock.send(self.order_dict['restore'])
                         self.recv = self.sock.recv(1024)
                         self.recv = binascii.b2a_hex(self.recv).decode()
-                        if self.crc(self.recv[4:-12]) == self.recv[-14:-4]:
+                        print("恢复")
+                        print(self.recv)
+                        if self.crc(self.recv[4:-12]) == self.recv[-12:-4]:
                             break
                         time.sleep(0.1)
                 time.sleep(conf.ReadResultCycle)
