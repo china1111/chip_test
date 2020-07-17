@@ -20,8 +20,9 @@ class classAback(QThread):
     update_date4 = pyqtSignal(str, str, str)
     update_date5 = pyqtSignal()
 
-    def __init__(self, self1):
+    def __init__(self, self1, tsname):
         # print("classAback")
+        self.name = tsname.split('_')[0]
         self.self1 = self1
         super(classAback, self).__init__()
         with open("order_dict.json", 'r') as f:
@@ -77,7 +78,7 @@ class classAback(QThread):
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.sock.connect((ipaddr, port))
 
-        self.idfirst = '000101' + self.mac[18:-12]
+        self.idfirst = self.mac[18:-12]
         # print("semf.mac")
         # print(self.mac)
         # print(self.idfirst)
@@ -95,18 +96,47 @@ class classAback(QThread):
         self.pidset = 0
         print("开始run")
         self.recvPOWER = ''
-        self.update_date1.emit('55aa00020007000300006c8000dd699d1a33cc')
-        self.time = time.localtime()
-        self.id = self.idfirst + '{:04x}{:02x}{:02x}{:02x}{:02x}{:02x}'.format(self.time.tm_year, self.time.tm_mon,
-                                                                               self.time.tm_mday, self.time.tm_hour,
-                                                                               self.time.tm_min, self.time.tm_sec)
+        if "name_id.json" not in os.listdir():
+            self.update_date1.emit('55aa00020007000300006c8000dd699d1a33cc')
+            self.time = time.localtime()
+            self.id = self.idfirst + '{:04x}{:02x}{:02x}{:02x}{:02x}{:02x}'.format(self.time.tm_year, self.time.tm_mon,
+                                                                                   self.time.tm_mday, self.time.tm_hour,
+                                                                                   self.time.tm_min, self.time.tm_sec)
+            self.name_id = {self.name: self.id}
+            with open("name_id.json", "w") as f1:
+                json.dump(self.name_id, f1)
+            # print("self.sendid")
+            # print(self.sendid)
+            # print("self.sendid")
+            # print(self.sendid)
+        else:
+            with open("name_id.json", "r") as f1:
+                self.name_id = json.load(f1)
+            print("self.name_id", self.name_id)
+            if self.name in self.name_id.keys():
+                self.id = self.name_id[self.name]
+                self.time = time.localtime()
+            else:
+                self.update_date1.emit('55aa00020007000300006c8000dd699d1a33cc')
+                self.time = time.localtime()
+                self.id = self.idfirst + '{:04x}{:02x}{:02x}{:02x}{:02x}{:02x}'.format(self.time.tm_year,
+                                                                                       self.time.tm_mon,
+                                                                                       self.time.tm_mday,
+                                                                                       self.time.tm_hour,
+                                                                                       self.time.tm_min,
+                                                                                       self.time.tm_sec)
+                print("self.id", self.id)
+                # self.sendid = self.ordercreate('0001', self.id,
+                #                                self.crc('0001' + '{:04x}'.format(int(len(self.id) / 2)) + self.id))
+                self.name_id[self.name] = self.id
+                with open("name_id.json", "w") as f1:
+                    json.dump(self.name_id, f1)
+        self.id = "000101" + f"{hex(int(self.name[0:4]))[2:]:>04}{hex(int(self.name[4:6]))[2:]:>02}{hex(int(self.name[6:8]))[2:]:>02}{hex(int(self.name[8:]))[2:]:>08}"+self.id
+        print("self.id", self.id)
         self.sendid = self.ordercreate('0001', self.id,
-                                       self.crc('0001' + '{:04x}'.format(int(len(self.id) / 2)) + self.id))
-        # print("self.sendid")
-        # print(self.sendid)
+                                        self.crc('0001' + '{:04x}'.format(int(len(self.id) / 2)) + self.id))
+        print("self.sendid", self.sendid)
         self.sendid = binascii.a2b_hex(self.sendid)
-        # print("self.sendid")
-        # print(self.sendid)
         self.sendord1 = [self.sendid, self.order_dict['getSTATE']]
         while True:
             for i in self.sendord1:
@@ -114,10 +144,10 @@ class classAback(QThread):
                     try:
                         # print("self.socket.send('self.sendid')")
                         # print(i)
-                        # print("这里对不对")
+                        # print("这里是新改的，对不对")
                         # time.sleep(1)
                         self.sock.send(i)
-                        # print('sock getSTATE OK')
+                        print('sock getSTATE OK')
 
                         self.recv = self.sock.recv(1024)
                         # print(self.recv)
@@ -125,14 +155,15 @@ class classAback(QThread):
                         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         self.sock.connect((conf.IP1_ADDR, conf.IP1_PORT))
                     self.recv = binascii.b2a_hex(self.recv).decode()
-                    # print(self.recv)
-                    # print('hello world1')
+                    print(self.recv)
+                    print('hello world1')
                     # print(self.recv[4:-12])
                     # print(self.crc(self.recv[4:-12]))
                     # print(self.recv[-12:-4])
                     if i is self.sendord1[1]:
                         self.sock.send(self.order_dict['getPOWER'])
                         self.recvPOWER = binascii.b2a_hex(self.sock.recv(1024)).decode()
+
                         self.update_date3.emit(self.id, time.strftime("%Y-%m-%d %H:%M:%S", self.time), self.recv, self.recvPOWER)
                         self.update_date.emit(self.recvPOWER)
                         self.update_date4.emit(self.id, '', self.recvPOWER)
@@ -148,7 +179,7 @@ class classAback(QThread):
 
 
 
-            # print('hello world')
+            print('hello world')
             while self.recv[12:20] in ['00030001', '00030101', '00030201']:
                 self.sock.send(self.order_dict['getSTATEagain'])
                 self.recv = self.sock.recv(1024)
@@ -176,11 +207,13 @@ class classAback(QThread):
                     self.update_date5.emit()
                     print("byebye")
                     return
-                # time.sleep(1)
+                time.sleep(0.1)
                 self.sock.send(self.order_dict['getSTATE'])
+                print("是不是你啊")
                 self.recv = self.sock.recv(1024)
+                print("你这里又咋了")
                 self.recv = binascii.b2a_hex(self.recv).decode()
-                # print("开始读取状态")
+                print("开始读取状态")
                 # print(self.recv)
                 if int(self.recv[8:12], 16) != 5:
                     self.update_date1.emit(self.recv)

@@ -26,6 +26,7 @@ class classA(QMainWindow):
         self.backend = -1
         self.tem1 = -100
         self.tem2 = -100
+        self.name = None
 
     def initUI(self):
         with open("statuscode.json", 'r') as f:
@@ -313,6 +314,10 @@ class classA(QMainWindow):
         # print("height = " + str(self.height()))
 
     def startchecked(self):
+        if self.name == None:
+            QMessageBox.critical(self, "错误", "请设置芯片的批次与标号", QMessageBox.Yes|QMessageBox.No, QMessageBox.Yes)
+            return
+        self.sbPOWER = []
         self.sb50.setDisabled(True)
         self.sb59.setStyleSheet("background:gray")
         self.sb63.setStyleSheet("background:green")
@@ -323,7 +328,7 @@ class classA(QMainWindow):
         self.wrong = 0
         self.temp = 0
         if self.backend == -1:
-            self.backend = classB.classAback(self)
+            self.backend = classB.classAback(self, self.name)
             self.backend.update_date3.connect(self.writetologbegin)
             self.backend.update_date2.connect(self.showLOG)
             self.backend.update_date.connect(self.showPOWER)
@@ -336,6 +341,7 @@ class classA(QMainWindow):
         self.sb56.setDisabled(False)
 
     def endchecked(self):
+        self.name = None
         self.sb59.setStyleSheet("background:gray")
         self.sb63.setStyleSheet("background:red")
         if self.backend == -1:
@@ -353,6 +359,7 @@ class classA(QMainWindow):
         self.setupobj = classC.classC(self)
         self.setupobj.update_temp1.connect(self.settemp1)
         self.setupobj.update_temp2.connect(self.settemp2)
+        self.setupobj.update_temp3.connect(self.setname)
         self.setupobj.show()
 
     def settemp1(self, temp1):
@@ -362,6 +369,14 @@ class classA(QMainWindow):
     def settemp2(self, temp2):
         self.tem2 = temp2
         print(self.tem2)
+
+    def setname(self, name):
+        lis = list(filter(lambda i: i.strip().startswith(name), os.listdir('data')))
+        print(lis)
+        n = len(lis)
+        print(n)
+        self.name = name + '_' + str(n)
+        print(self.name)
 
     def pausechecked(self):
         if self.backend == -1:
@@ -592,6 +607,7 @@ class classA(QMainWindow):
 #             f1.write(s3)
 
     def writetologbegin(self, id, dttime, recv, recv2):
+        print("我进来了")
         self.id = id
         self.total = int(recv[18:22], 16)
         sb100 = [int(recv2[16:-12][i:i+4],16)/1000 for i in range(0, len(recv2[16:-12]), 4)]
@@ -613,7 +629,7 @@ DATA: {dttime}
 '''
         self.sb55 += s1
         print("self.sb55:", self.sb55)
-        with open(self.id + ".txt", 'w') as f1:
+        with open('data/' + self.name + ".txt", 'w') as f1:
             f1.write(s1)
     def writetolog(self, id, recv, recv2):
         if recv == '':
@@ -625,7 +641,7 @@ DATA: {dttime}
             l1 = recv[22:-12]
             sb101 = [l1[i:i+4][-2:] for i in range(0, len(l1), 4)]
             sb102 = [l1[i:i+4][:2] for i in range(0, len(l1), 4)]
-            with open(self.id + ".txt", 'a') as f1:
+            with open('data/' + self.name + ".txt", 'a') as f1:
                 for i in range(len(sb101)):
                     if sb102[i] == '00':
                         c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\n'
@@ -648,7 +664,7 @@ DATA: {dttime}
             self.sbPOWER.append(sb103)
             # print('sb103', sb103)
 
-            with open(self.id + ".txt", 'a') as f1:
+            with open('data/' + self.name + ".txt", 'a') as f1:
                 for i in range(len(sb101)-1):
                     if sb102[i] == '00':
                         c = f"{int(self.sb101[i], 16):<8}" + "{:<50}".format(self.sb99[str(int(sb101[i], 16))]) + '\tPASS\t' + '\n'
@@ -719,7 +735,7 @@ DATA:{t1}
         self.sb34.setPlainText(self.sb55)
         self.sb34.verticalScrollBar().setValue(self.sb34.verticalScrollBar().maximum())
 
-        with open(self.id + ".txt", 'a') as f1:
+        with open('data/' + self.name + ".txt", 'a') as f1:
             f1.write(s5)
 
         self.write_to_log_power()
@@ -734,10 +750,10 @@ VDDIO_A: {l[6]:.3f}V, {l[7]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
 VDDINT_B: {l[8]:.3f}V, {l[9]:.3f}A    VDDRAM_B: {l[10]:.3f}V, {l[11]:.3f}A  
 VDDIO_B: {l[12]:.3f}V, {l[13]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
 '''
-        with open(self.id + ".txt", 'a') as f1:
+        with open('data/' + self.name + ".txt", 'a') as f1:
             f1.write(c)
 
-        with open(self.id + ".txt", 'a') as f1:
+        with open('data/' + self.name + ".txt", 'a') as f1:
             f1.write("---------------------------Power(abnormal)----------------------------\n")
             for i in self.sbPOWER:
                 if i[0] < conf.VDD12V[0] or i[0] > conf.VDD12V[1] or i[1] < conf.VDD12V[2] or i[1] > conf.VDD12V[3]:
@@ -759,7 +775,7 @@ VDDIO_B: {l[12]:.3f}V, {l[13]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
 
 
     def write_to_end(self, t, t1):
-        with open(self.id + ".txt", "a") as f1:
+        with open('data/' + self.name + ".txt", "a") as f1:
             f1.write("----------------------data------------------------\n")
             f1.write(f"DATA:{t1}\n")
             f1.write("---------------------result------------------------\n")
