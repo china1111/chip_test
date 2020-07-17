@@ -30,7 +30,11 @@ class classC(QTabWidget):
         self.label4 = QLabel("批次")
         self.label5 = QLabel("片号")
         self.lineEdit1 = QLineEdit()
+        self.qdouble1 = QDoubleValidator()
+        self.lineEdit1.setValidator(self.qdouble1)
         self.lineEdit2 = QLineEdit()
+        self.qdouble2 = QDoubleValidator()
+        self.lineEdit2.setValidator(self.qdouble2)
         self.lineEdit4 = QLineEdit()
         self.spinBox5 = QSpinBox()
         self.spinBox5.setMaximum(10000)
@@ -102,8 +106,10 @@ class classC(QTabWidget):
     def pushButton3Clicked(self):
         if self.lineEdit4.text() == '' or self.spinBox5.text() == '0':
             QMessageBox.critical(self, '错误', '请输入正确的批次和芯片号', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            return
         print(f"{self.lineEdit4.text()}{self.spinBox5.text():>04}")
         self.update_temp3.emit(f"{self.lineEdit4.text()}{self.spinBox5.text():>04}")
+        QMessageBox.information(self, "正确", "信息加载完成", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
 
 
 if __name__ == "__main__":
