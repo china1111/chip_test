@@ -1,0 +1,116 @@
+M02 TEST RECORD
+ID: 00010107e4071100000001000100000107e40711100512
+TOTAL TEST: 70
+TEM: TEM_A: -100¡æ, TEM_B: -100¡æ
+VDD12V: 11.931V, 0.395A  
+VDDINT_A: 1.042V, 0.0A    VDDRAM_A: 1.495V, 3.276A 
+VDDIO_A: 2.498V, 0.001A   VDD2V3:3.29V, 0.085A
+VDDINT_B: 1.042V, 0.0A    VDDRAM_B: 1.495V, 3.276A  
+VDDIO_B: 2.5V, 0.001A   VDD2V3:3.29V, 0.085A
+DATA: 2020-07-17 16:05:18
+
+
+
+------------------start test-------------------
+1       S001_ALU_ADD                                      	PASS
+2       S002_ALU_RDC                                      	PASS
+3       S003_ALU_AB                                       	PASS
+4       S004_ALU_COM                                      	FAIL
+5       S005_ALU_MAX                                      	PASS
+6       S006_ALU_MIN                                      	PASS
+7       S007_ALU_VAMX                                     	PASS
+8       S008_ALU_VMIN                                     	PASS
+9       S009_ALU_INC                                      	PASS
+10      S010_ALU_DEC                                      	PASS
+11      S011_ALU_COMP                                     	PASS
+12      S012_ALU_CLIP                                     	PASS
+13      S013_ALU_SUM                                      	FAIL
+14      S014_ALU_ONE                                      	PASS
+15      S015_ALU_FIFO                                     	PASS
+16      S016_ALU_AAB                                      	PASS
+17      S017_ALU_ASUM                                     	PASS
+18      S018_ALU_ADDRDC                                   	PASS
+19      S019_ALU_PASS                                     	FAIL
+20      S020_ALU_LOG                                      	FAIL
+21      S021_ALU_EXP                                      	PASS
+22      S022_ALU_MER                                      	PASS
+23      S023_ALU_PER1                                     	PASS
+24      S024_ALU_PER2                                     	PASS
+25      S025_ALU_FADD                                     	FAIL
+26      S026_ALU_FRDC                                     	FAIL
+27      S027_ALU_FMAX                                     	PASS
+28      S028_ALU_FMIN                                     	PASS
+29      S029_ALU_FAB                                      	PASS
+30      S030_ALU_FCOM                                     	PASS
+31      S031_ALU_FCOMP                                    	PASS
+32      S032_ALU_FFIX                                     	FAIL
+33      S033_ALU_FFLO                                     	PASS
+34      S034_ALU_FEXTD                                    	PASS
+35      S035_ALU_FSNG1                                    	PASS
+36      S036_ALU_FCLIP                                    	FAIL
+37      S037_ALU_FCOPY                                    	PASS
+38      S038_ALU_FSCALB                                   	PASS
+39      S039_ALU_FPASS                                    	FAIL
+40      S040_ALU_FRECIPS                                  	PASS
+41      S041_ALU_FRSQRTS                                  	PASS
+42      S042_ALU_FMANT                                    	PASS
+43      S043_ALU_FLOG                                     	FAIL
+44      S044_ALU_FADDRDC                                  	PASS
+45      S045_CLU_TMAX                                     	PASS
+46      S046_CLU_MAX                                      	PASS
+47      S047_CLU_DESPREAD                                 	PASS
+48      S048_CLU_XCORRS                                   	PASS
+49      S049_CLU_ACS                                      	PASS
+50      S050_IALU_ADDRDC                                  	PASS
+51      S051_IALU_COMP                                    	FAIL
+52      S052_IALU_MAXMIN                                  	PASS
+53      S053_IALU_ABS                                     	PASS
+54      S054_IALU_NOT                                     	PASS
+55      S055_IALU_LOG                                     	PASS
+56      S056_IALU_SFT                                     	FAIL
+57      S057_IALU_ROT                                     	FAIL
+58      S058_MUL_MULN                                     	PASS
+59      S059_MUL_MULACC                                   	PASS
+60      S060_MUL_MULQ                                     	PASS
+61      S061_MUL_MULACCQ                                  	PASS
+62      S062_MUL_COMMULACC                                	PASS
+63      S063_MUL_MULF                                     	PASS
+64      S064_MUL_COMPACT                                  	FAIL
+65      S065_SFT_LSHIFT                                   	PASS
+66      S066_SFT_ASHIFT                                   	PASS
+67      S067_SFT_ROT                                      	FAIL
+68      S068_SFT_GETBIT                                   	PASS
+69      S069_SFT_PUTBIT                                   	PASS
+70      S070_SFT_BITEST                                   	PASS
+
+
+
+-----------------end--------------------
+M02 TEST RESULT
+TEST_TOTAL:70
+OK: 55
+ERROR: 15
+DATA:2020-07-17 16:05:51
+-----------------Power(average)-------------------------
+VDD12V: 11.931V, 0.395A  
+VDDINT_A: 1.042V, 0.000A    VDDRAM_A: 1.495V, 3.276A 
+VDDIO_A: 2.498V, 0.001A   VDD2V3:3.290V, 0.085A
+VDDINT_B: 1.042V, 0.000A    VDDRAM_B: 1.495V, 3.276A  
+VDDIO_B: 2.500V, 0.001A   VDD2V3:3.290V, 0.085A
+---------------------------Power(abnormal)----------------------------
+VDD12V: 11.931V, 0.395A	VDD3V3: 3.29V, 0.085A	VDDINT_A: 1.042V, 0.0A	VDDDRM_A: 1.495V, 3.276A	VDDDIO_A: 2.498V, 0.001A	VDDINT_B: 1.042V, 0.0A	VDDINT_B: 1.042V, 0.0A	VDDINT_B: 1.042V, 0.0A
+VDD12V: 11.931V, 0.395A	VDD3V3: 3.29V, 0.085A	VDDINT_A: 1.042V, 0.0A	VDDDRM_A: 1.495V, 3.276A	VDDDIO_A: 2.498V, 0.001A	VDDINT_B: 1.042V, 0.0A	VDDINT_B: 1.042V, 0.0A	VDDINT_B: 1.042V, 0.0A
+----------------------data------------------------
+DATA:2020-07-17 16:05:51
+---------------------result------------------------
+**********          **             **        **     
+**********         ****            **        ** 
+**               **    **          **        **
+**             **        **        **        **
+**********     **        **        **        **
+**********     ************        **        **
+**             ************        **        **
+**             **        **        **        **
+**             **        **        **        **
+**             **        **        **        ***********
+**             **        **        **        ***********

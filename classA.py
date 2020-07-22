@@ -618,9 +618,9 @@ TOTAL TEST: {self.total}
 TEM: TEM_A: {self.tem1}℃, TEM_B: {self.tem2}℃
 VDD12V: {sb100[0]}V, {sb100[1]}A  
 VDDINT_A: {sb100[2]}V, {sb100[3]}A    VDDRAM_A: {sb100[4]}V, {sb100[5]}A 
-VDDIO_A: {sb100[6]}V, {sb100[7]}A   VDD2V3:{sb100[14]}V, {sb100[15]}A
+VDDIO_A: {sb100[6]}V, {sb100[7]}A   VDD3V3:{sb100[14]}V, {sb100[15]}A
 VDDINT_B: {sb100[8]}V, {sb100[9]}A    VDDRAM_B: {sb100[10]}V, {sb100[11]}A  
-VDDIO_B: {sb100[12]}V, {sb100[13]}A   VDD2V3:{sb100[14]}V, {sb100[15]}A
+VDDIO_B: {sb100[12]}V, {sb100[13]}A   VDD3V3:{sb100[14]}V, {sb100[15]}A
 DATA: {dttime}
 
 
@@ -746,9 +746,9 @@ DATA:{t1}
         c = f'''-----------------Power(average)-------------------------
 VDD12V: {l[0]:.3f}V, {l[1]:.3f}A  
 VDDINT_A: {l[2]:.3f}V, {l[3]:.3f}A    VDDRAM_A: {l[4]:.3f}V, {l[5]:.3f}A 
-VDDIO_A: {l[6]:.3f}V, {l[7]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
+VDDIO_A: {l[6]:.3f}V, {l[7]:.3f}A   VDD3V3:{l[14]:.3f}V, {l[15]:.3f}A
 VDDINT_B: {l[8]:.3f}V, {l[9]:.3f}A    VDDRAM_B: {l[10]:.3f}V, {l[11]:.3f}A  
-VDDIO_B: {l[12]:.3f}V, {l[13]:.3f}A   VDD2V3:{l[14]:.3f}V, {l[15]:.3f}A
+VDDIO_B: {l[12]:.3f}V, {l[13]:.3f}A   VDD3V3:{l[14]:.3f}V, {l[15]:.3f}A
 '''
         with open('data/' + self.name + ".txt", 'a') as f1:
             f1.write(c)
